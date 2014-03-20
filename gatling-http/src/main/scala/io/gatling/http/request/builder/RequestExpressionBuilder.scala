@@ -15,7 +15,7 @@
  */
 package io.gatling.http.request.builder
 
-import java.net.URI
+import java.net.{ URI, URL }
 import com.ning.http.client.{ Request, RequestBuilder => AHCRequestBuilder }
 import com.typesafe.scalalogging.slf4j.StrictLogging
 import io.gatling.core.config.GatlingConfiguration.configuration
@@ -35,9 +35,11 @@ abstract class RequestExpressionBuilder(commonAttributes: CommonAttributes, prot
 	def buildURI(session: Session): Validation[URI] = {
 
 		def createURI(url: String): Validation[URI] =
-			try
-				URI.create(url).success
-			catch {
+			try {
+				val _url = new URL(url)
+				val uri = new URI(_url.getProtocol, _url.getUserInfo, _url.getHost, _url.getPort, _url.getPath, _url.getQuery, _url.getRef)
+				uri.success
+			} catch {
 				case e: Exception => s"url $url can't be parsed into a URI: ${e.getMessage}".failure
 			}
 
